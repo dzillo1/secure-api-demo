@@ -42,8 +42,9 @@ router.get("/api/data", authenticateToken, (req, res) => {
     message: "Secure data accessed",
     user: req.user.username,
     data: [
-      { id: 1, name: "Button", usageCount: 120 },
-      { id: 2, name: "Modal", usageCount: 45 },
+      { id: 1, name: "laptops", usageCount: 120 },
+      { id: 2, name: "monitors", usageCount: 45 },
+      { id: 3, name: "keyboards", usageCount: 78 }
     ],
   });
 });
