@@ -4,49 +4,42 @@ const authenticateToken = require("./authMiddleware");
 
 const router = express.Router();
 
-/**
- * Public endpoint
- */
-router.get("/public/status", (req, res) => {
-  res.json({
-    status: "API is running",
-    timestamp: new Date().toISOString(),
-  });
-});
+// fake user (demo)
+const DEMO_USER = {
+  username: "demo",
+  password: "password",
+};
 
-/**
- * Login endpoint (demo-only)
- */
+// login
 router.post("/auth/login", (req, res) => {
   const { username, password } = req.body;
 
-  // Demo validation ONLY
-  if (username !== "demo" || password !== "password") {
-    return res.status(401).json({ message: "Invalid credentials" });
+  if (
+    username !== DEMO_USER.username ||
+    password !== DEMO_USER.password
+  ) {
+    return res.status(401).json({ error: "Invalid credentials" });
   }
 
-  const user = { username };
-
-  const token = jwt.sign(user, process.env.JWT_SECRET, {
-    expiresIn: "1h",
-  });
+  const token = jwt.sign(
+    { username },
+    process.env.JWT_SECRET,
+    { expiresIn: "1h" }
+  );
 
   res.json({ token });
 });
 
-/**
- * Protected endpoint
- */
-router.get("/api/data", authenticateToken, (req, res) => {
-  res.json({
-    message: "Secure data accessed",
-    user: req.user.username,
-    data: [
-      { id: 1, name: "laptops", usageCount: 120 },
-      { id: 2, name: "monitors", usageCount: 45 },
-      { id: 3, name: "keyboards", usageCount: 78 }
-    ],
-  });
-});
+// protected route
+router.get(
+  "/private/profile",
+  authenticateToken,
+  (req, res) => {
+    res.json({
+      message: "Protected data access granted",
+      user: req.user,
+    });
+  }
+);
 
 module.exports = router;
