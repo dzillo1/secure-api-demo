@@ -1,23 +1,16 @@
 const express = require("express");
-const jwt = require("jsonwebtoken");
-const authenticateToken = require("./authMiddleware");
-
 const router = express.Router();
+const authMiddleware = require("./authMiddleware");
 
-// fake user (demo)
-const DEMO_USER = {
-  username: "demo",
-  password: "password",
-};
+router.get("/public/status", (req, res) => {
+  res.json({ status: "ok", message: "Public API is running" });
+});
 
-// login
 router.post("/auth/login", (req, res) => {
+  const jwt = require("jsonwebtoken");
   const { username, password } = req.body;
 
-  if (
-    username !== DEMO_USER.username ||
-    password !== DEMO_USER.password
-  ) {
+  if (username !== "demo" || password !== "password") {
     return res.status(401).json({ error: "Invalid credentials" });
   }
 
@@ -30,16 +23,13 @@ router.post("/auth/login", (req, res) => {
   res.json({ token });
 });
 
-// protected route
-router.get(
-  "/private/profile",
-  authenticateToken,
-  (req, res) => {
-    res.json({
-      message: "Protected data access granted",
-      user: req.user,
-    });
-  }
-);
+// 🔒 PROTECTED ROUTE
+router.get("/private/profile", authMiddleware, (req, res) => {
+  res.json({
+    username: req.user.username,
+    role: "user",
+    message: "Protected profile data"
+  });
+});
 
 module.exports = router;
