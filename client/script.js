@@ -1,69 +1,107 @@
 const API_BASE = "https://secure-api-demo.onrender.com";
-let jwtToken = null;
-const output = document.getElementById("output");
+const TOKEN_KEY = "secure_api_jwt";
 
-// Utility to display messages with optional type
+let jwtToken = localStorage.getItem(TOKEN_KEY);
+const output = document.getElementById("output");
+const authStatus = document.getElementById("authStatus");
+
+// ---------- UI helpers ----------
 function show(message, type = "success") {
-  output.textContent = typeof message === "string" ? message : JSON.stringify(message, null, 2);
+  output.textContent =
+    typeof message === "string"
+      ? message
+      : JSON.stringify(message, null, 2);
   output.className = type;
 }
 
-// Helper to handle fetch errors
-async function fetchJSON(url, options = {}) {
-  try {
-    const res = await fetch(url, options);
-    if (!res.ok) {
-      const errorData = await res.json().catch(() => ({}));
-      throw new Error(`${res.status} ${res.statusText} ${JSON.stringify(errorData)}`);
-    }
-    return await res.json();
-  } catch (err) {
-    throw err;
+function updateAuthUI() {
+  if (jwtToken) {
+    authStatus.textContent = "✅ Logged in (JWT stored)";
+  } else {
+    authStatus.textContent = "🔒 Not logged in";
   }
 }
 
-// Check API Status
+// ---------- fetch helper ----------
+async function fetchJSON(url, options = {}) {
+  const res = await fetch(url, options);
+
+  if (!res.ok) {
+    let errorData = {};
+    try {
+      errorData = await res.json();
+    } catch (_) {}
+
+    if (res.status === 401) {
+      logout("Session expired. Please login again.");
+    }
+
+    throw new Error(
+      `${res.status} ${res.statusText} ${JSON.stringify(errorData)}`
+    );
+  }
+
+  return res.json();
+}
+
+// ---------- actions ----------
 document.getElementById("checkStatus").addEventListener("click", async () => {
-  show("Checking API status...", "success");
+  show("Checking API status...");
   try {
     const data = await fetchJSON(`${API_BASE}/public/status`);
-    show(data, "success");
+    show(data);
   } catch (err) {
-    show({ error: "Failed to fetch status", details: err.message }, "error");
+    show(err.message, "error");
   }
 });
 
-// Login
 document.getElementById("login").addEventListener("click", async () => {
-  show("Logging in...", "success");
+  show("Logging in...");
   try {
     const data = await fetchJSON(`${API_BASE}/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username: "demo", password: "password" }),
     });
+
     jwtToken = data.token;
-    show({ message: "JWT received and stored in memory", token: jwtToken }, "success");
+    localStorage.setItem(TOKEN_KEY, jwtToken);
+    updateAuthUI();
+
+    show("✅ Logged in successfully");
   } catch (err) {
-    show({ error: "Login failed", details: err.message }, "error");
+    show("❌ Login failed\n" + err.message, "error");
   }
 });
 
-// Get Protected Profile
 document.getElementById("profile").addEventListener("click", async () => {
   if (!jwtToken) {
-    show({ error: "Please login first" }, "error");
+    show("Please login first", "error");
     return;
   }
 
-  show("Fetching protected profile...", "success");
-
+  show("Fetching protected profile...");
   try {
     const data = await fetchJSON(`${API_BASE}/private/profile`, {
       headers: { Authorization: `Bearer ${jwtToken}` },
     });
-    show(data, "success");
+    show(data);
   } catch (err) {
-    show({ error: "Unauthorized or server error", details: err.message }, "error");
+    show("❌ Unauthorized or server error\n" + err.message, "error");
   }
 });
+
+document.getElementById("logout").addEventListener("click", () => {
+  logout("Logged out");
+});
+
+// ---------- logout ----------
+function logout(message) {
+  jwtToken = null;
+  localStorage.removeItem(TOKEN_KEY);
+  updateAuthUI();
+  show(message, "success");
+}
+
+// Initialize UI on load
+updateAuthUI();
