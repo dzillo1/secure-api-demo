@@ -6,16 +6,11 @@
   <style>
     body { font-family: Arial, sans-serif; margin: 2rem; }
     button { margin: 0.5rem; padding: 0.5rem 1rem; }
-    #output {
-      margin-top: 1rem;
-      padding: 1rem;
-      border: 1px solid #ccc;
-      background: #f9f9f9;
-      white-space: pre-wrap;
-    }
+    #output {margin-top: 1rem; padding: 1rem; border: 1px solid #ccc; background: #f9f9f9; white-space: pre-wrap;}
     .success { color: green; }
     .error { color: red; }
     #authStatus { margin-bottom: 1rem; font-weight: bold; }
+    #logout { background: #eee; color: #333; border: 1px solid #ccc; }
   </style>
 </head>
 <body>
@@ -25,8 +20,8 @@
 
   <button id="checkStatus">Check API Status</button>
   <button id="login">Login</button>
-  <button id="logout">Logout</button>
   <button id="profile">Get Protected Profile</button>
+  <button id="logout">Logout</button>
 
   <pre id="output"></pre>
 
