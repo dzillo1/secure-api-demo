@@ -5,7 +5,7 @@ let jwtToken = localStorage.getItem(TOKEN_KEY);
 const output = document.getElementById("output");
 const authStatus = document.getElementById("authStatus");
 
-// ---------- UI helpers ----------
+// ui
 function show(message, type = "success") {
   output.textContent =
     typeof message === "string"
@@ -22,7 +22,7 @@ function updateAuthUI() {
   }
 }
 
-// ---------- fetch helper ----------
+// fetch
 async function fetchJSON(url, options = {}) {
   const res = await fetch(url, options);
 
@@ -44,7 +44,7 @@ async function fetchJSON(url, options = {}) {
   return res.json();
 }
 
-// ---------- actions ----------
+// actions
 document.getElementById("checkStatus").addEventListener("click", async () => {
   show("Checking API status...");
   try {
@@ -95,7 +95,7 @@ document.getElementById("logout").addEventListener("click", () => {
   logout("Logged out");
 });
 
-// ---------- logout ----------
+// logout
 function logout(message) {
   jwtToken = null;
   localStorage.removeItem(TOKEN_KEY);
@@ -103,5 +103,5 @@ function logout(message) {
   show(message, "success");
 }
 
-// Initialize UI on load
+// Initialize ui on load
 updateAuthUI();
